@@ -1,0 +1,68 @@
+﻿@model XICore.XIDLayout
+    @{ 
+        var oParams = ViewBag.oPramas;
+    }
+@*@{
+       Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    }*@
+
+@*<script>
+        $(document).ready(function () {
+            $(document.body).on('click', 'button.InlineEditSaveBtn', function () {
+                var formid = $(this).closest('form').attr('class');
+                var formData = JSON.parse(JSON.stringify(jQuery('.' + formid).serializeArray()))
+                var Dialog = [];
+                var i, j, titleid = [];
+                for (i = 0, j = formData.length; i < j; i++) {
+                    Dialog.push({ Label: formData[i].name, Data: formData[i].value });
+                }
+                var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+                var pvalue = {
+                    FormValues: Dialog,
+                    iInstanceID: '@Session["iInstanceID"]',
+                    sGUID: sGUID
+                }
+                $.ajax({
+                    url: '@Url.Action("EditData", "XiLink")',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache: false,
+                    data: JSON.stringify(pvalue),
+                    success: function (data) {
+                        if (data != "Failure") {
+                            var IsSuccess = true;
+                            var Error = "";
+                            var Scripts = data.Definition.BOScripts;
+                            for (i = 0; i < Scripts.length; i++) {
+                                if (!Scripts[i].IsSuccess) {
+                                    for (j = 0; j < Scripts[i].ScriptResults.length; j++) {
+                                        if (Scripts[i].ScriptResults[j].sAction == "Failure") {
+                                            IsSuccess = false;
+                                            Error = Error + Scripts[i].ScriptResults[j].sMessage + "<br/>";
+                                        }
+                                    }
+                                }
+                            }
+                            if (IsSuccess) {
+                                Error = "Data saved successfully";
+                                $('#DialogErrors').html(Error);
+                            }
+                            else {
+                                $('#DialogErrors').html(Error);
+                            }
+                        }
+                        else {
+                            $('#DialogErrors').html('Error occured please check');
+                        }
+                    },
+                    error: function (data) {
+                    }
+                });
+            });
+        });
+    </script>*@
+
+@{
+    Html.RenderAction("GetDialogContent", "XiLink", new { model = Model, oNVParams = oParams });
+}

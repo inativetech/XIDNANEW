@@ -1,0 +1,132 @@
+﻿@model XIDNA.Models.cXIComponents
+
+<script>
+    $(document).ready(function () {
+
+        $(document.body).unbind().on('click', 'input.SaveXIComponentParamsBtn', function () {
+            debugger
+            var Component = @Html.Raw(Json.Encode(Model));
+            var ComponentType= "QSStepSection";
+            var MappingID = '@Model.ID';
+            var ID = @ViewBag.SectionID;
+            var NVPairs = [];
+            $('.NVPairs').each(function () {
+                var Name; var Value;
+                $(this).find('label').each(function (i, obj) {
+                    Name = $(this).attr('data-sName');
+                });
+                $(this).find('input').each(function (i, obj) {
+                    var Nname = obj.name;
+                    if (Nname == "Names") {
+                        Value = $(this).val();
+                    }
+                });
+                if ((Name && Name.length > 0) && (Value && Value.length > 0)) {
+                    //NVPairs.push(Name + "-" + Value);
+                    for(i=0;i<Component.XIComponentNVs.length;i++){
+                        if(Component.XIComponentNVs[i].sName == Name){
+                            Component.XIComponentNVs[i].sValue = Value;
+                        }
+                    }
+                }
+            });
+            $('.TNVPairs').each(function () {
+                var Name; var Value;
+                $(this).find('label').each(function (i, obj) {
+                    Name = $(this).attr('data-sName');
+                });
+                $(this).find('input').each(function (i, obj) {
+                    var Nname = obj.name;
+                    if (Nname == "Names") {
+                        Value = $(this).val();
+                    }
+                });
+                if ((Name && Name.length > 0) && (Value && Value.length > 0)) {
+                    //NVPairs.push(Name + "-" + Value);
+                    for(i=0;i<Component.XIComponentTriggers.length;i++){
+                        if(Component.XIComponentTriggers[i].sName == Name){
+                            Component.XIComponentTriggers[i].sValue = Value;
+                        }
+                    }
+                }
+            });
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SaveComponentParams", "XIComponents")',
+                data: JSON.stringify({ oComponent: Component, sType:ComponentType, iLoadID: ID }),//JSON.stringify(Component),
+                contentType: 'application/json;',
+                dataType: 'json',
+                traditional: true,
+                success: function (data) {
+                    debugger
+                    if(ComponentType == "QSStep"){
+                        $('#SaveSecCompoParams').val(data);
+                    }
+                    else if(ComponentType == "QSStepSection"){
+                        $('#SaveSecCompoParams').val(data);
+                    }
+                    $("."+MappingID+'-'+ComponentType+'-div').dialog('close');
+                    ComponentType = null;
+                }
+            });
+        });
+
+       //Paste
+    });
+</script>
+
+<div class="content" id="XICParams">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div id="XIComponentParams">
+                    <input type="hidden" id="IsValueSet" value="@ViewBag.IsValueSet" />
+                    @if (Model.XIComponentParams.Count() > 0)
+                    {
+                        foreach (var items in Model.XIComponentParams)
+                        {
+                            <div class="form-group col-md-12 NVPairs">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn" data-sname="@items.sName"> @items.sName <span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" name="Names" placeholder="Value" class="form-control" value="@items.sValue" />
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        foreach (var items in Model.XIComponentNVs)
+                        {
+                            <div class="form-group col-md-12 NVPairs">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn" data-sname="@items.sName"> @items.sName <span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" name="Names" placeholder="Value" class="form-control" value="@items.sValue" />
+                                </div>
+                            </div>
+                        }
+                        foreach (var items in Model.XIComponentTriggers)
+                        {
+                            <div class="form-group col-md-12 TNVPairs">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn" data-sname="@items.sName"> @items.sName <span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" name="Names" placeholder="Output Area" class="form-control" value="@items.sValue" />
+                                </div>
+                            </div>
+                        }
+                    }
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <input type="button" value="Update" class="btn btn-theme SaveXIComponentParamsBtn" id="" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

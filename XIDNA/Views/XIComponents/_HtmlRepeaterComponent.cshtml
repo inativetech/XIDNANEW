@@ -1,0 +1,138 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+
+@{
+    bool Flag = false;
+    XIDBO oBOD = new XIDBO();
+    XID1Click o1ClickD = new XID1Click();
+    if (Model.oContent.ContainsKey(XIConstant.HTMLComponent))
+    {
+        o1ClickD = (XID1Click)Model.oContent[XIConstant.HTMLComponent];
+        Flag = o1ClickD.bFlag;
+        if (o1ClickD == null)
+        {
+            o1ClickD = new XID1Click();
+        }
+        XIInfraCache oCache = new XIInfraCache();
+        oBOD = (XIDBO)oCache.GetObjectFromCache(XIConstant.CacheBO_All, null, o1ClickD.BOID.ToString());
+    }
+    var sBOName = string.Empty;
+    var iBODID = 0;
+    if (o1ClickD != null)
+    {
+        sBOName = o1ClickD.sBOName;
+        iBODID = o1ClickD.BOID;
+    }
+    var sPagination = "no";
+    string sHeading = string.Empty;
+    string sVisualisation = string.Empty;
+    var oVisualisations = Model.oVisualisation;
+    List<XIVisualisationNV> oVisualisationNVs = new List<XIVisualisationNV>();
+    if (oVisualisations != null && oVisualisations.Count() > 0)
+    {
+        var oVisual = oVisualisations.FirstOrDefault();
+        sVisualisation = oVisual.Name;
+        if (oVisual != null && oVisual.XiVisualisationNVs != null && oVisual.XiVisualisationNVs.Count() > 0)
+        {
+            oVisualisationNVs = oVisual.XiVisualisationNVs;
+            var Heading = oVisualisationNVs.Where(m => m.sName.ToLower() == "Heading".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(Heading))
+            {
+                sHeading = Heading;
+            }
+            var Pagination = oVisualisationNVs.Where(m => m.sName.ToLower() == "Pagination".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(Pagination))
+            {
+                sPagination = Pagination;
+            }
+        }
+    }
+    var iTotalRecords = o1ClickD.iTotalRecords;
+    bool bDisableNextBtn = true;
+    bool bDisablePrevBtn = false;
+    var DisplayedRecords = (o1ClickD.iTotaldisplayRecords + 1) * o1ClickD.iPaginationCount;
+    if (DisplayedRecords <= iTotalRecords)
+    {
+        bDisableNextBtn = false;
+    }
+    if (o1ClickD.iTotaldisplayRecords == 0)
+    {
+        bDisablePrevBtn = true;
+    }
+    List<string> Prms = new List<string>();
+    string sParams = string.Empty;
+    var oCompD = (XIDComponent)Model.oDefintion;
+    if (oCompD != null)
+    {
+        var Params = oCompD.Params;
+        foreach (var Param in Params)
+        {
+            Prms.Add(Param.sName + "_" + Param.sValue);
+        }
+        sParams = string.Join(":", Prms);
+    }
+    if(o1ClickD.iTotaldisplayRecords == 0 && o1ClickD.iTotalRecords <= DisplayedRecords)
+    {
+        sPagination = "no";
+    }
+}
+
+<div class="fluid-row" id="ContentPlace-@o1ClickD.ID">
+    @if (!string.IsNullOrEmpty(sHeading))
+    {
+        <h3 class="maintitle">@sHeading</h3>
+    }
+
+    @if (o1ClickD.RepeaterResult != null && o1ClickD.RepeaterResult.Count() > 0)
+    {
+        foreach (var item in o1ClickD.RepeaterResult)
+        {
+            @Html.Raw(item)
+        }
+    }
+    @if (!string.IsNullOrEmpty(sPagination) && sPagination.ToLower() == "yes")
+    {
+        if (bDisablePrevBtn)
+        {
+            <button type="button" disabled class="SubmitBtn btn btn-theme GridPrevBtn" onclick="fncGetPrevHTMLRows(this, '@sParams','ContentPlace-@o1ClickD.ID', '@o1ClickD.sGUID', '@sVisualisation')" data-count="@o1ClickD.iTotaldisplayRecords"><i class="fa fa-edit"></i> Prev</button>
+        }
+        else
+        {
+            <button type="button" class="SubmitBtn btn btn-theme GridPrevBtn" onclick="fncGetPrevHTMLRows(this, '@sParams','ContentPlace-@o1ClickD.ID', '@o1ClickD.sGUID', '@sVisualisation')" data-count="@o1ClickD.iTotaldisplayRecords"><i class="fa fa-edit"></i> Prev</button>
+        }
+        if (bDisableNextBtn)
+        {
+            <button type="button" disabled class="SubmitBtn btn btn-theme GripNextBtn" onclick="fncGetNextHTMLRows(this, '@sParams','ContentPlace-@o1ClickD.ID', '@o1ClickD.sGUID', '@sVisualisation')" data-count="@o1ClickD.iTotaldisplayRecords"><i class="fa fa-edit"></i> Next</button>
+        }
+        else
+        {
+            <button type="button" class="SubmitBtn btn btn-theme GripNextBtn" onclick="fncGetNextHTMLRows(this, '@sParams','ContentPlace-@o1ClickD.ID', '@o1ClickD.sGUID', '@sVisualisation')" data-count="@o1ClickD.iTotaldisplayRecords"><i class="fa fa-edit"></i> Next</button>
+        }
+    }
+</div>
+<script>
+    $(document).ready(function () {
+        if ('@Flag'=='True')
+            Leadoneclick();
+
+    });
+    function Leadoneclick() {
+        var Param ='4464,4471,4470,4469,4468,4467,4466,4465'
+    $.ajax({
+        url: '@Url.Action("LeadTrace", "XiSignalR")',
+        type: 'Post',
+        contentType: "application/json; charset=utf-8",
+        datatype: "json",
+        async: true,
+        cache: false,
+        data: JSON.stringify({ sOneClick: Param }),
+        success: function (data) {
+            //for (var i = 0; i < data.length; i++) {
+            //    var data1 = data[i];
+            //    $('#XI-' + data1.ID).html(data1.LeadCount);
+            //}
+        }
+    });
+    }
+</script>

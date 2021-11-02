@@ -1,0 +1,38 @@
+﻿
+@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using System.Globalization;
+@{
+    XIGraphData oXIGraph = new XIGraphData();
+    Dictionary<string, string> values = new Dictionary<string, string>();
+    var Percentagevalue = "";
+    List<XIVisualisationNV> oXIVisualisations = new List<XIVisualisationNV>();
+    oXIGraph = (XIGraphData)Model.oContent[XIConstant.AM4GaugeChartComponent];
+    var colours = string.Empty;
+    var Fontsize = string.Empty;
+    if (Model.oContent.ContainsKey(XIConstant.AM4GaugeChartComponent))
+    {
+        values = oXIGraph.OneClickRes;
+
+        oXIVisualisations = oXIGraph.oXIVisualisations;
+    }
+    colours = "blue";
+}
+<div class="gauge-chart content-block">
+    @if (@values != null)
+    {
+        <p class="chart-title">@values.Select(s => s.Value).FirstOrDefault() </p>
+    }
+    <div class="" id="gaugechart-@oXIGraph.OnClickResultID"></div>
+</div>
+<script>
+    $(document).ready(function () {
+        debugger;
+        var JsonData = @Html.Raw(Json.Encode(oXIGraph));
+        //JsonData.PerVale=Percentagevalue;
+        fncDeviceAM4GaugeChart(JsonData);
+    });
+
+
+</script>
